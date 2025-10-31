@@ -1,0 +1,23 @@
+-- CreateTable
+CREATE TABLE `Report` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(191) NOT NULL,
+    `content` VARCHAR(191) NOT NULL,
+    `reportType` ENUM('MONTHLY', 'QUARTERLY', 'ANNUAL', 'EMERGENCY', 'INCIDENT', 'VACCINATION_CAMPAIGN', 'DISEASE_OUTBREAK', 'OTHER') NOT NULL,
+    `status` ENUM('PENDING', 'REVIEWED', 'APPROVED', 'REJECTED', 'REQUIRES_REVISION') NOT NULL DEFAULT 'PENDING',
+    `submittedBy` INTEGER NOT NULL,
+    `sector` VARCHAR(191) NOT NULL,
+    `district` VARCHAR(191) NOT NULL,
+    `province` VARCHAR(191) NOT NULL,
+    `attachments` VARCHAR(191) NULL,
+    `sectorVetNotes` VARCHAR(191) NULL,
+    `reviewedBy` INTEGER NULL,
+    `reviewedAt` DATETIME(3) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Report` ADD CONSTRAINT `Report_submittedBy_fkey` FOREIGN KEY (`submittedBy`) REFERENCES `Register`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

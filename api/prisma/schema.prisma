@@ -1,0 +1,190 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Register {
+  id                Int                     @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  email             String                  @unique
+  phone             String                  @unique
+  nationalId        String
+  dateOfBirth       DateTime
+  gender            String
+  password          String
+  province          String
+  district          String
+  sector            String
+  cell              String
+  village           String
+  graduationYear    Int?
+  graduationProgramFacility String?
+  fieldOfGraduation String?
+  workplace         String?
+  degreeCert        String?
+  nationalIdCopy    String?
+  license           String?
+  passportPhoto     String?
+  role              RegisterRole
+  isFirstLogin      Boolean                 @default(true)
+  createdBy         Int?
+  status            RegistrationStatus      @default(PENDING)
+  approvedBy        Int?
+  approvedAt        DateTime?
+  rejectedBy        Int?
+  rejectionReason   String?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  createdPatients   Patient[]               @relation("PatientVeterinarian")
+  createdTreatments Treatment[]             @relation("TreatmentVeterinarian")
+  submittedReports  Report[]                @relation("ReportSubmitter")
+  licenseApplications VetLicenseApplication[] @relation("VetLicenseApplicationToVet")
+  medicines           Medicine[]               @relation("RegisterToMedicine")
+}
+
+enum RegisterRole {
+  BASIC_VET
+  SECTOR_VET
+  ADMIN
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Patient {
+  id                 Int         @id @default(autoincrement())
+  animalName         String
+  ownerName          String
+  ownerPhone         String
+  ownerEmail         String?
+  ownerIdNumber      String?
+  province           String
+  district           String?
+  sector             String?
+  cell               String?
+  village            String?
+  previousConditions String?
+  veterinarianId     Int
+  veterinarian       Register    @relation("PatientVeterinarian", fields: [veterinarianId], references: [id])
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  treatments         Treatment[]
+}
+
+model Treatment {
+  id                       Int      @id @default(autoincrement())
+  patientId                Int
+  patient                  Patient  @relation(fields: [patientId], references: [id])
+  veterinarianId           Int
+  veterinarian             Register @relation("TreatmentVeterinarian", fields: [veterinarianId], references: [id])
+  date                     DateTime
+  diagnosisAndNotes        String?
+  medicinesAndPrescription String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model Report {
+  id                 Int          @id @default(autoincrement())
+  title              String
+  content            String       @db.Text
+  reportType         ReportType
+  status             ReportStatus @default(PENDING)
+  submittedBy        Int
+  submitter          Register     @relation("ReportSubmitter", fields: [submittedBy], references: [id])
+  sector             String
+  district           String
+  province           String
+  attachments        String?
+  sectorVetNotes     String?      @db.Text
+  reviewedBy         Int?
+  reviewedAt         DateTime?
+  districtVetNotes   String?      @db.Text
+  districtReviewedBy Int?
+  districtReviewedAt DateTime?
+  recommendation     String?      @db.Text
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+enum ReportType {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+  EMERGENCY
+  INCIDENT
+  VACCINATION_CAMPAIGN
+  DISEASE_OUTBREAK
+  PHARMACEUTICAL
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  APPROVED
+  REJECTED
+  REQUIRES_REVISION
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+
+model VetLicenseApplication {
+  id                Int                @id @default(autoincrement())
+  vetId             Int
+  vet               Register           @relation("VetLicenseApplicationToVet", fields: [vetId], references: [id])
+  fieldOfPractice   String?            @map("FieldOfPractice")
+  licenseType       String
+  status            RegistrationStatus @default(PENDING)
+  paymentReceiptUrl String?
+  licenseNumber     String? // New field for storing the generated license number
+  reviewNotes       String?            @db.Text
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Medicine {
+  id               Int       @id @default(autoincrement())
+  name             String
+  description      String?
+  totalStock       Int       @default(0)
+  currentStock     Int       @default(0)
+  stockIn          Int?      @default(0)
+  stockOut         Int?      @default(0)
+  unit             String
+  expiryDate       DateTime?
+  veterinarianId   Int
+  veterinarian     Register  @relation("RegisterToMedicine", fields: [veterinarianId], references: [id])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  stockMovements   MedicineStockMovement[] // <-- Add this line
+}
+
+model MedicineStockMovement {
+  id        Int      @id @default(autoincrement())
+  medicineId Int
+  medicine  Medicine @relation(fields: [medicineId], references: [id])
+  quantity  Int
+  type      String // 'STOCK_IN' or 'STOCK_OUT'
+  createdAt DateTime @default(now())
+}
+model FieldOfPractice {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
