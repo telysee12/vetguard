@@ -8,6 +8,8 @@ export class GlobalAuthGuard implements CanActivate {
     { method: 'POST', pathRegex: /^\/api\/v1\/register$/ },
     { method: 'POST', pathRegex: /^\/api\/v1\/password-reset\// },
     { method: 'POST', pathRegex: /^\/api\/v1\/upload$/ },
+    // Public endpoint for viewing approved basic vets (for public vet directory)
+    { method: 'GET', pathRegex: /^\/api\/v1\/register\/public\/basic-vets$/ },
     // allow static uploads
     { method: 'GET', pathRegex: /^\/uploads\// },
   ];

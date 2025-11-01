@@ -6,7 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs'
 import { Card, CardHeader, CardContent, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Plus, Eye, Edit, Package, Trash2, Syringe, FilePlus, Award, Upload, Download, CreditCard, CheckCircle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
+import { Plus, Eye, Edit, Package, Trash2, Syringe, FilePlus, Award, Upload, Download, CreditCard, CheckCircle, FileText, FileCheck } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
@@ -77,6 +78,12 @@ const PharmacyDashboard: React.FC = () => {
   const [reportRecommendation, setReportRecommendation] = useState('');
   const [isSavingReport, setIsSavingReport] = useState(false);
 
+  // Track Reports state
+  const [myReports, setMyReports] = useState<any[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [editReport, setEditReport] = useState<any | null>(null);
+  const [editReportForm, setEditReportForm] = useState({ title: '', content: '' });
+
   // License application state (mirrors BasicDashboard)
   interface LicenseOption { value: string; label: string; price: number }
   const licenseOptions: LicenseOption[] = [
@@ -141,6 +148,66 @@ const PharmacyDashboard: React.FC = () => {
     }
   };
   useEffect(() => { if (currentUser) loadMedicines(); }, [currentUser]);
+
+  // Track Reports functions
+  const loadMyReports = async () => {
+    if (!currentUser?.id) return;
+    setLoadingReports(true);
+    try {
+      const data = await apiGet<any[]>(`/api/v1/reports/mine`);
+      setMyReports(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Failed to load my reports:", e);
+      setMyReports([]);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser?.id) loadMyReports();
+  }, [currentUser?.id]);
+
+  const handleOpenEditReport = (r: any) => {
+    setEditReport(r);
+    setEditReportForm({ title: r.title || '', content: r.content || '' });
+  };
+
+  const handleResubmitReport = async () => {
+    if (!editReport) return;
+    try {
+      const res = await fetch(`${getApiUrl()}/api/v1/reports/${editReport.id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          submitterEdit: true,
+          title: editReportForm.title,
+          content: editReportForm.content,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to resubmit report');
+      toast({ title: 'Report Resubmitted', description: 'Report moved back to Pending' });
+      setEditReport(null);
+      await loadMyReports();
+    } catch (e: unknown) {
+      toast({ title: 'Error', description: e instanceof Error ? e.message : 'Failed', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteReport = async (id: number) => {
+    if (!confirm('Delete this report? This cannot be undone.')) return;
+    try {
+      const res = await fetch(`${getApiUrl()}/api/v1/reports/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('Failed to delete report');
+      toast({ title: 'Report Deleted' });
+      setMyReports(prev => prev.filter(r => r.id !== id));
+    } catch (e: unknown) {
+      toast({ title: 'Error', description: e instanceof Error ? e.message : 'Failed', variant: 'destructive' });
+    }
+  };
 
   // Medicine logic handlers (delete, stock in/out, etc.)
   const handleDeleteMedicine = async (id: number) => {
@@ -437,6 +504,7 @@ const PharmacyDashboard: React.FC = () => {
       };
       await apiPost('/api/v1/reports', payload);
       toast({ title: 'Report Saved', description: 'Pharmaceutical report has been saved.' });
+      await loadMyReports(); // Reload reports to show in Track Reports tab
       // optionally clear or keep values
     } catch (e: any) {
       toast({ title: 'Error', description: e.message || 'Failed to save report', variant: 'destructive' });
@@ -497,9 +565,10 @@ const PharmacyDashboard: React.FC = () => {
       />
       <div className="container mx-auto px-4 pb-8">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 mb-2">
+          <TabsList className="grid w-full grid-cols-4 mb-2">
             <TabsTrigger value="medicines">Medicines</TabsTrigger>
             <TabsTrigger value="reports">Generate Pharmacy Report</TabsTrigger>
+            <TabsTrigger value="track-reports">Track Reports</TabsTrigger>
             <TabsTrigger value="license">License Application</TabsTrigger>
           </TabsList>
           {/* Medicines Tab */}
@@ -573,8 +642,12 @@ const PharmacyDashboard: React.FC = () => {
             {viewingMedicineData && (
               <MedicineDetails 
                 medicine={viewingMedicineData}
-                open={!!viewingMedicineData}
-                onOpenChange={() => setViewingMedicineData(null)}
+                onClose={() => setViewingMedicineData(null)}
+                onUpdateStock={(med) => {
+                  setSelectedMedicineForStock(med);
+                  setViewingMedicineData(null);
+                  setShowStockInModal(true);
+                }}
               />
             )}
             {/* Stock In Modal */}
@@ -653,6 +726,75 @@ const PharmacyDashboard: React.FC = () => {
                     <Button type="submit" disabled={isSavingReport || !reportContent}>{isSavingReport ? 'Saving...' : 'Save Report'}</Button>
                   </div>
                 </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Track Reports Tab */}
+          <TabsContent value="track-reports" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <span>My Submitted Reports</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingReports ? (
+                  <div className="text-sm text-muted-foreground">Loading...</div>
+                ) : myReports.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No reports submitted yet.</div>
+                ) : (
+                  <div className="border rounded-lg overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="border px-3 py-2 text-left">Title</th>
+                          <th className="border px-3 py-2 text-left">Type</th>
+                          <th className="border px-3 py-2 text-left">Status</th>
+                          <th className="border px-3 py-2 text-left">Submitted</th>
+                          <th className="border px-3 py-2 text-left">Target Sector</th>
+                          <th className="border px-3 py-2 text-left">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {myReports.map((r) => (
+                          <tr key={r.id} className="hover:bg-muted/50">
+                            <td className="border px-3 py-2">{r.title}</td>
+                            <td className="border px-3 py-2">{String(r.reportType || '').replace('_', ' ')}</td>
+                            <td className="border px-3 py-2">
+                              <Badge variant="outline">{r.status}</Badge>
+                            </td>
+                            <td className="border px-3 py-2">{new Date(r.createdAt).toLocaleDateString()}</td>
+                            <td className="border px-3 py-2">{r.sector}</td>
+                            <td className="border px-3 py-2">
+                              <div className="flex gap-2">
+                                {r.status === 'REQUIRES_REVISION' && (
+                                  <Button size="sm" variant="outline" onClick={() => handleOpenEditReport(r)}>
+                                    <Edit className="h-3 w-3 mr-1" />
+                                    Edit & Resubmit
+                                  </Button>
+                                )}
+                                {r.status === 'REJECTED' && (
+                                  <Button size="sm" variant="destructive" onClick={() => handleDeleteReport(r.id)}>
+                                    <Trash2 className="h-3 w-3 mr-1" />
+                                    Delete
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div className="pt-4">
+                  <Button variant="outline" onClick={() => setSelectedTab('reports')}>
+                    <FileCheck className="h-4 w-4 mr-2" />
+                    Create New Report
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -813,6 +955,43 @@ const PharmacyDashboard: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Edit Report Modal */}
+        {editReport && (
+          <Dialog open={!!editReport} onOpenChange={(open) => { if (!open) setEditReport(null); }}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Edit & Resubmit Report</DialogTitle>
+                <DialogDescription>
+                  Update your report and resubmit it for review.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-report-title">Title</Label>
+                  <Input
+                    id="edit-report-title"
+                    value={editReportForm.title}
+                    onChange={(e) => setEditReportForm({ ...editReportForm, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-report-content">Content</Label>
+                  <Textarea
+                    id="edit-report-content"
+                    value={editReportForm.content}
+                    onChange={(e) => setEditReportForm({ ...editReportForm, content: e.target.value })}
+                    rows={10}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditReport(null)}>Cancel</Button>
+                <Button onClick={handleResubmitReport}>Resubmit Report</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );

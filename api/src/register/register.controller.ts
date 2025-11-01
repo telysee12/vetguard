@@ -81,6 +81,12 @@ export class RegisterController {
     return this.registerService.findBasicVets();
   }
 
+  // Public endpoint for vet directory (no authentication required)
+  @Get('public/basic-vets')
+  async getPublicBasicVets() {
+    return this.registerService.findBasicVets();
+  }
+
   @Get('sector/:sector')
   findBySector(@Param('sector') sector: string) {
     return this.registerService.findBySector(sector);

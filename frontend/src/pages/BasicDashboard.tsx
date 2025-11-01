@@ -68,8 +68,6 @@ import UserProfileDropdown from '../components/UserProfileDropdown';
 import LicenseCard from '../components/LicenseCard';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf'; // Import jsPDF
-import MedicineForm from '../components/forms/MedicineForm';
-import { MedicineDetails } from '../components/details/MedicineDetails';
 import UserProfileModal from '../components/UserProfileModal';
 import { addYears } from 'date-fns';
 import { io, Socket } from 'socket.io-client'; // Add for WebSocket integration
@@ -77,30 +75,6 @@ import { io, Socket } from 'socket.io-client'; // Add for WebSocket integration
 // Import Patient type from PatientForm to ensure type compatibility
 import type { Patient } from '../components/forms/PatientForm';
 
-// Medicine Management Interfaces
-interface Medicine {
-  id: number;
-  name: string;
-  description: string;
-  totalStock: number;
-  currentStock: number;
-  stockIn: number;
-  stockOut: number;
-  unit: string;
-  expiryDate: string;
-  veterinarianId: number;
-  createdAt: string;
-  updatedAt: string;
-  stockMovements: MedicineStockMovement[];
-}
-
-interface MedicineStockMovement {
-  id: number;
-  medicineId: number;
-  quantity: number;
-  type: 'STOCK_IN' | 'STOCK_OUT';
-  createdAt: string;
-}
 
 // Activity Management Interfaces
 interface ActivityRecord {
@@ -321,22 +295,12 @@ const BasicDashboard = () => {
   const [editingPatient, setEditingPatient] = useState<Patient | undefined>(undefined);
   const [viewingPatientId, setViewingPatientId] = useState<number | null>(null);
   const [viewingPatientData, setViewingPatientData] = useState<Patient | null>(null);
-  const [showStockInModal, setShowStockInModal] = useState(false);
-  const [showStockOutModal, setShowStockOutModal] = useState(false);
-  const [selectedMedicineForStock, setSelectedMedicineForStock] = useState<Medicine | null>(null);
-  const [stockQuantity, setStockQuantity] = useState(1);
   const [showReportForm, setShowReportForm] = useState(false);
   const [viewingReportId, setViewingReportId] = useState<number | null>(null);
 
   const [viewingTreatments, setViewingTreatments] = useState<ActivityRecord[]>([]);
   const [viewingLoading, setViewingLoading] = useState<boolean>(false);
   
-  // Medicine Management State
-  const [medicines, setMedicines] = useState<Medicine[]>([]);
-  const [showMedicineForm, setShowMedicineForm] = useState(false);
-  const [editingMedicine, setEditingMedicine] = useState<Medicine | undefined>(undefined);
-  const [viewingMedicineData, setViewingMedicineData] = useState<Medicine | null>(null);
-  const [medicineLoading, setMedicineLoading] = useState(false);
   
   // Add user state management
   interface User {
@@ -675,61 +639,6 @@ const BasicDashboard = () => {
     }
   };
 
-  const handleStockIn = async () => {
-    if (!selectedMedicineForStock || stockQuantity <= 0) return;
-    try {
-      const res = await fetch(`${getApiUrl()}/api/v1/medicines/${selectedMedicineForStock.id}/stock-in`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ quantity: stockQuantity }),
-      });
-      if (!res.ok) throw new Error('Failed to stock in');
-      toast({ title: 'Stock Updated', description: `${stockQuantity} units added.` });
-      setShowStockInModal(false);
-      setSelectedMedicineForStock(null);
-      setStockQuantity(1);
-      reloadMedicines();
-    } catch (e: unknown) {
-      toast({ title: 'Error', description: e instanceof Error ? e.message : 'Failed', variant: 'destructive' });
-    }
-  };
-
-  const handleStockOut = async () => {
-    if (!selectedMedicineForStock || stockQuantity <= 0) return;
-    if (stockQuantity > selectedMedicineForStock.currentStock) {
-      toast({ title: 'Error', description: 'Stock out quantity cannot exceed current stock.', variant: 'destructive' });
-      return;
-    }
-    try {
-      const res = await fetch(`${getApiUrl()}/api/v1/medicines/${selectedMedicineForStock.id}/stock-out`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ quantity: stockQuantity }),
-      });
-      if (!res.ok) throw new Error('Failed to stock out');
-      toast({ title: 'Stock Updated', description: `${stockQuantity} units dispensed.` });
-      setShowStockOutModal(false);
-      setSelectedMedicineForStock(null);
-      setStockQuantity(1);
-      reloadMedicines();
-    } catch (e: unknown) {
-      toast({ title: 'Error', description: e instanceof Error ? e.message : 'Failed', variant: 'destructive' });
-    }
-  };
-
-  const deleteMedicine = async (id: number) => {
-    try {
-      const res = await fetch(`${getApiUrl()}/api/v1/medicines/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('Failed to delete medicine');
-      toast({ title: 'Medicine Deleted' });
-      reloadMedicines();
-    } catch (e: unknown) {
-      toast({ title: 'Error', description: e instanceof Error ? e.message : 'Failed', variant: 'destructive' });
-    }
-  };
 
   const loadReports = async () => {
     // Placeholder for report loading logic
@@ -1442,77 +1351,6 @@ const BasicDashboard = () => {
     }
   }, [reportForm.reportType, showReportModal]);
 
-  const loadMedicines = useCallback(async () => {
-    if (!currentUser?.id) return;
-    setMedicineLoading(true);
-    try {
-      const res = await fetch(`${getApiUrl()}/api/v1/medicines`, { headers: getAuthHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        // Filter medicines by the current veterinarian's ID
-        const filteredMedicines = data.filter((m: Medicine) => m.veterinarianId === Number(currentUser.id));
-        setMedicines(filteredMedicines);
-      } else {
-        // Handle HTTP errors like 500
-        const errorData = await res.json().catch(() => ({ message: 'Failed to load medicines. The server returned an error.' }));
-        console.error("Failed to load medicines:", errorData);
-        toast({
-          title: `Error: ${res.status}`,
-          description: errorData.message || "An unknown error occurred.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to load medicines:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "A network error occurred.",
-        variant: "destructive",
-      });
-    } finally {
-      setMedicineLoading(false);
-    }
-  }, [currentUser?.id, toast]);
-
-  // Load medicines from API
-  useEffect(() => {
-    loadMedicines();
-  }, [loadMedicines]);
-
-  const reloadMedicines = async () => {
-    await loadMedicines();
-  };
-
-  // Effect to load medicine details when viewingMedicineData changes
-  useEffect(() => {
-    if (viewingMedicineData) {
-      // No need to fetch, as we already have the full medicine object
-    }
-  }, [viewingMedicineData]);
-
-  // Load single medicine for details view
-  useEffect(() => {
-    const loadMedicineDetails = async () => {
-      if (!viewingMedicineData) return;
-      setMedicineLoading(true);
-      try {
-        const res = await fetch(`${getApiUrl()}/api/v1/medicines/${viewingMedicineData.id}`, { headers: getAuthHeaders() });
-        if (res.ok) {
-          const data = await res.json();
-          setViewingMedicineData(data);
-        } else {
-          setViewingMedicineData(null);
-        }
-      } catch (error) {
-        console.error("Failed to load medicine details:", error);
-        setViewingMedicineData(null);
-      } finally {
-        setMedicineLoading(false);
-      }
-    };
-
-    loadMedicineDetails();
-  }, [viewingMedicineData]);
 
   const openDocumentPreview = (url: string, title?: string) => {
     if (url) {
@@ -1621,10 +1459,9 @@ const BasicDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full lg:w-fit grid-cols-2 lg:grid-cols-6">
+          <TabsList className="grid w-full lg:w-fit grid-cols-2 lg:grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="patients">Patients</TabsTrigger>
-            <TabsTrigger value="medicines">Medicines</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="track-reports">Track Reports</TabsTrigger>
             <TabsTrigger value="license">License Application</TabsTrigger>
@@ -1822,99 +1659,6 @@ const BasicDashboard = () => {
                       </div>
                     </div>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Medicines Tab */}
-          <TabsContent value="medicines" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center space-x-2">
-                    <Syringe className="h-5 w-5 text-primary" />
-                    <span>Medicine Inventory</span>
-                  </CardTitle>
-                  <Button onClick={() => setShowMedicineForm(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Medicine
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {medicineLoading ? (
-                    <p>Loading medicines...</p>
-                  ) : medicines.length === 0 ? (
-                    <p className="text-muted-foreground">No medicines found. Add a new medicine to get started.</p>
-                  ) : (
-                    medicines.map((medicine) => (
-                      <div key={medicine.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-1">
-                          <h4 className="font-medium">{medicine.name}</h4>
-                          <p className="text-sm text-muted-foreground">Current Stock: {medicine.currentStock} {medicine.unit}</p>
-                          {medicine.expiryDate && (
-                            <p className="text-sm text-muted-foreground">Expiry: {new Date(medicine.expiryDate).toLocaleDateString()}</p>
-                          )}
-                          <p className="text-sm text-muted-foreground">Total Stocked In: {medicine.stockIn || 0} {medicine.unit}</p>
-                          <p className="text-sm text-muted-foreground">Total Stocked Out: {medicine.stockOut || 0} {medicine.unit}</p>
-                        </div>
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <Badge variant={medicine.currentStock > 10 ? "default" : "destructive"} className={medicine.currentStock > 10 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                            {medicine.currentStock > 10 ? "In Stock" : "Low Stock"}
-                          </Badge>
-                          <Button size="sm" variant="outline" onClick={() => setViewingMedicineData(medicine)}>
-                            <Eye className="h-3 w-3 mr-1" />
-                            View Details
-                          </Button>
-                          <Button size="sm" onClick={() => { 
-                            setSelectedMedicineForStock(medicine);
-                            setShowStockInModal(true);
-                          }}>
-                            <Plus className="h-3 w-3 mr-1" />
-                            Stock In
-                          </Button>
-                          <Button size="sm" variant="destructive" onClick={() => { 
-                            setSelectedMedicineForStock(medicine);
-                            setShowStockOutModal(true);
-                          }}>
-                            <Package className="h-3 w-3 mr-1" />
-                            Stock Out
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => { setEditingMedicine(medicine); setShowMedicineForm(true); }}>
-                            <Edit className="h-3 w-3 mr-1" />
-                            Edit
-                          </Button>
-                          <AlertTriangle>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="sm" variant="destructive">
-                                  <Trash2 className="h-3 w-3 mr-1" />
-                                  Delete
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete the
-                                    medicine and remove its data from our servers.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => deleteMedicine(medicine.id)}>
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </AlertTriangle>
-                        </div>
-                      </div>
-                    ))
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -2794,31 +2538,6 @@ const BasicDashboard = () => {
         />
       )}
 
-      {/* Medicine Form Modal */}
-      {showMedicineForm && currentUser?.id && (
-        <MedicineForm
-          onClose={() => {
-            setShowMedicineForm(false);
-            setEditingMedicine(undefined);
-          }}
-          editingMedicine={editingMedicine}
-          onSuccess={reloadMedicines}
-          veterinarianId={Number(currentUser.id)}
-        />
-      )}
-
-      {/* Medicine Details Modal */}
-      {viewingMedicineData && (
-        <MedicineDetails
-          medicine={viewingMedicineData}
-          onClose={() => setViewingMedicineData(null)}
-          onUpdateStock={(med) => {
-            setSelectedMedicineForStock(med);
-            setShowStockInModal(true); // Default to stock in, user can choose stock out from the modal
-          }}
-        />
-      )}
-
       {/* User Profile Modal */}
       {currentUser?.email && (
         <UserProfileModal
@@ -2828,74 +2547,6 @@ const BasicDashboard = () => {
           onProfileUpdated={handleProfileUpdated}
           currentPassportPhotoUrl={currentUser.passportPhoto}
         />
-      )}
-
-
-      {/* Stock In Modal */}
-      {showStockInModal && selectedMedicineForStock && (
-        <Dialog open={showStockInModal} onOpenChange={setShowStockInModal}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Stock In {selectedMedicineForStock.name}</DialogTitle>
-              <DialogDescription>
-                Enter the quantity of medicine to add to stock.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="stock-in-quantity" className="text-right">
-                  Quantity
-                </Label>
-                <Input
-                  id="stock-in-quantity"
-                  type="number"
-                  value={stockQuantity}
-                  onChange={(e) => setStockQuantity(Number(e.target.value))}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowStockInModal(false)}>Cancel</Button>
-              <Button onClick={handleStockIn}>Stock In</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Stock Out Modal */}
-      {showStockOutModal && selectedMedicineForStock && (
-        <Dialog open={showStockOutModal} onOpenChange={setShowStockOutModal}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Stock Out {selectedMedicineForStock.name}</DialogTitle>
-              <DialogDescription>
-                Enter the quantity of medicine to dispense from stock.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="stock-out-quantity" className="text-right">
-                  Quantity
-                </Label>
-                <Input
-                  id="stock-out-quantity"
-                  type="number"
-                  value={stockQuantity}
-                  onChange={(e) => setStockQuantity(Number(e.target.value))}
-                  className="col-span-3"
-                />
-              </div>
-              <p className="text-sm text-muted-foreground text-center">
-                Current available stock: {selectedMedicineForStock.currentStock} {selectedMedicineForStock.unit}
-              </p>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowStockOutModal(false)}>Cancel</Button>
-              <Button variant="destructive" onClick={handleStockOut}>Stock Out</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       )}
 
       {/* Report Form Modal */}

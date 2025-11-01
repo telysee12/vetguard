@@ -42,8 +42,10 @@ const VetDirectory = () => {
     const loadVets = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${getApiUrl()}/api/v1/register`);
+        // Use public endpoint that doesn't require authentication
+        const res = await fetch(`${getApiUrl()}/api/v1/register/public/basic-vets`);
         const data = res.ok ? await res.json() : [];
+        // The endpoint already returns only approved basic vets, but filter as safety measure
         const approvedVets = (Array.isArray(data) ? data : []).filter(
           (vet: Vet) => vet.role === 'BASIC_VET' && vet.status === 'APPROVED'
         );
