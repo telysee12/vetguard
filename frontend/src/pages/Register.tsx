@@ -54,6 +54,20 @@ const sectorCells: Record<string, string[]> = {
   ],
 };
 
+// fallback local villages for Huye (used when API returns 404 or is unavailable)
+const localVillagesByCell: Record<string, string[]> = {
+  Kinyamakara: ['Kinyamakara I', 'Kinyamakara II', 'Kinyamakara III'],
+  Ruhashya: ['Ruhashya Centre', 'Ruhashya East', 'Ruhashya West'],
+  Gatobotobo: ['Gatobotobo A', 'Gatobotobo B'],
+  Nyakagezi: ['Nyakagezi 1', 'Nyakagezi 2'],
+  Rukira: ['Rukira North', 'Rukira South'],
+  Kibingo: ['Kibingo A', 'Kibingo B'],
+  Sovu: ['Sovu I', 'Sovu II'],
+  Muyogoro: ['Muyogoro Central', 'Muyogoro East'],
+  Bunazi: ['Bunazi I', 'Bunazi II'],
+  // add more mappings as you get real data
+};
+
 const Register = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -308,6 +322,98 @@ const Register = () => {
   const handleFileUpload = (field: 'degree' | 'license' | 'nationalIdCopy' | 'passportPhoto', file: File | null) => {
     setFormData({...formData, [field]: file});
   };
+
+  // Villages fetched based on selected cell
+  const [villages, setVillages] = useState<string[]>([]);
+  const [villagesLoading, setVillagesLoading] = useState(false);
+  const [villagesError, setVillagesError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!formData.cell) {
+      setVillages([]);
+      setVillagesError(null);
+      return;
+    }
+
+    let mounted = true;
+    const apiUrl = (import.meta as ImportMeta).env?.VITE_API_URL || 'http://localhost:3000';
+
+    const tryFetch = async (url: string) => {
+      const res = await fetch(url);
+      if (!res.ok) return { ok: false, status: res.status, body: null as unknown };
+      const json = await res.json();
+      return { ok: true, status: res.status, body: json as unknown };
+    };
+
+    const fetchVillages = async () => {
+      setVillagesLoading(true);
+      setVillagesError(null);
+
+      // candidate endpoints to try (add or adjust to match backend)
+      const endpoints = [
+        `${apiUrl}/api/v1/locations/cells/${encodeURIComponent(formData.cell)}/villages`,
+        `${apiUrl}/api/v1/villages?cell=${encodeURIComponent(formData.cell)}`,
+        `${apiUrl}/api/v1/locations/villages/${encodeURIComponent(formData.cell)}`
+      ];
+
+      try {
+        let resultList: string[] | null = null;
+        let lastError: string | null = null;
+
+        for (const url of endpoints) {
+          try {
+            const r = await tryFetch(url);
+            if (r.ok) {
+              const json = r.body;
+              // accept array or { villages: [...] }
+              if (Array.isArray(json)) {
+                resultList = json as string[];
+              } else if (json && typeof json === 'object' && 'villages' in (json as any)) {
+                resultList = (json as any).villages as string[];
+              } else if (json && typeof json === 'object' && 'data' in (json as any)) {
+                // some APIs wrap in data
+                const d = (json as any).data;
+                resultList = Array.isArray(d) ? d : (d?.villages || null);
+              }
+              if (resultList) break;
+            } else {
+              lastError = `Failed to load villages (${r.status}) from ${url}`;
+              // try next endpoint on 404 or other non-ok
+            }
+          } catch (err) {
+            lastError = err instanceof Error ? err.message : String(err);
+          }
+        }
+
+        // If no endpoint returned data, fallback to local map for Huye
+        if (!resultList) {
+          const fallback = localVillagesByCell[formData.cell];
+          if (fallback && fallback.length > 0) {
+            resultList = fallback;
+            lastError = null; // clear error because we have fallback
+          } else {
+            // no fallback available
+            if (!lastError) lastError = 'No villages found for selected cell';
+          }
+        }
+
+        if (mounted) {
+          setVillages(resultList || []);
+          setVillagesError(lastError);
+        }
+      } catch (err: unknown) {
+        if (mounted) {
+          setVillages([]);
+          setVillagesError(err instanceof Error ? err.message : 'Failed to fetch villages');
+        }
+      } finally {
+        if (mounted) setVillagesLoading(false);
+      }
+    };
+
+    fetchVillages();
+    return () => { mounted = false; };
+  }, [formData.cell]);
 
   if (!registrationAllowed) {
     return (
@@ -580,7 +686,7 @@ const Register = () => {
                             id="cell"
                             className="w-full p-2 border border-input rounded-md bg-background"
                             value={formData.cell}
-                            onChange={(e) => setFormData({...formData, cell: e.target.value})}
+                            onChange={(e) => setFormData({...formData, cell: e.target.value, village: ''})}
                             disabled={!formData.sector}
                             required
                           >
@@ -592,12 +698,25 @@ const Register = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="village">Village</Label>
-                          <Input
+                          <select
                             id="village"
-                            placeholder="Enter village"
+                            className="w-full p-2 border border-input rounded-md bg-background"
                             value={formData.village}
                             onChange={(e) => setFormData({...formData, village: e.target.value})}
-                          />
+                            disabled={!formData.cell || villagesLoading}
+                            required
+                          >
+                            <option value="">{villagesLoading ? 'Loading villages...' : 'Select Village'}</option>
+                            {villages.map(v => (
+                              <option key={v} value={v}>{v}</option>
+                            ))}
+                          </select>
+                          {!villagesLoading && formData.cell && villages.length === 0 && (
+                            <p className="text-sm text-muted-foreground mt-1">No villages available for selected cell.</p>
+                          )}
+                          {villagesError && (
+                            <p className="text-sm text-red-500 mt-1">Error loading villages: {villagesError}</p>
+                          )}
                         </div>
                       </div>
 

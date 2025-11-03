@@ -1,0 +1,107 @@
+{
+  "Ngoma": [
+    ["Matyazo", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Butare", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Kaburemera", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Ngoma", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]]
+  ],
+  "Tumba": [
+    ["Cyarwa", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Rango B", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Gitwa", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Cyimana", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Mpare", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]]
+  ],
+  "Huye": [
+    ["Muyogoro", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Muyogoro", "Rugarama"]],
+    ["Nyakagezi", ["Gahogo", "Gasharu", "Gataka", "Gitwa", "Kabeza", "Karama", "Kiyovu", "Ruhuha"]],
+    ["Rukira", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Sovu", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]]
+  ],
+  "Ruhashya": [
+    ["Ruhashya", ["Buhoro", "Gatwa", "Hinamo", "Rugarama"]],
+    ["Muhororo", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Rugogwe", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Gatovu", ["Gatovu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Karama", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Busheshi", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Mara", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]]
+  ],
+  "Rusatira": [
+    ["Mugogwe", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Mugogwe", "Rweru"]],
+    ["Gafumba", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Kimuna", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Kimirehe", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Kiruhura", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Buhimba", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]]
+  ],
+  "Gishamvu": [
+    ["Sholi", ["Buhoro", "Gakoma", "Kigoma", "Kirwa", "Munini", "Nyagisozi", "Nyarusange"]],
+    ["Nyakibanda", ["Gahondo", "Gifurwe", "Kanyinya", "Karambi", "Kivugiza", "Murambi", "Nyarusange"]],
+    ["Ryakibogo", ["Gitega", "Kabuga", "Kanyiramana", "Karama", "Kivomo", "Murehe", "Nyabikenke", "Rugarama"]],
+    ["Nyumba", ["Gisunzu", "Kabeza", "Kaduha", "Kanyinya", "Karama", "Kivumu", "Rukore", "Rwesero"]]
+  ],
+  "Karama": [
+    ["Muhembe", ["Bweramana", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Gahororo", ["Gahondo", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Mpare", "Rugarama"]],
+    ["Buhoro", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Ruhuha", "Rweru"]],
+    ["Kibingo", ["Gasharu", "Gisunzu", "Kibingo", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Bunazi", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]]
+  ],
+  "Kigoma": [
+    ["Kabatwa", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Nyabisindu", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Karambi", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Kabuga", ["Gasharu", "Gisunzu", "Kabuga", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Gishihe", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Musebeya", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rutobwe", "Rweru"]],
+    ["Rugarama", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Shanga", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]]
+  ],
+  "Maraba": [
+    ["Shanga", ["Gasharu", "Gishiye", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Kabuye", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Kanyinya", ["Gasharu", "Gisunzu", "Kanyinya", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Gasumba", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Shyembe", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Buremera", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]]
+  ],
+  "Mbazi": [
+    ["Gatobotobo", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Rusagara", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Mutunda", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Tare", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Mwulire", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Rugango", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Kabuga", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]]
+  ],
+  "Mukura": [
+    ["Rango A", ["Gatovu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Icyeru", ["Gasharu", "Gisunzu", "Kirenge", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Buvumu", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Tumba", "Rweru"]],
+    ["Bukomeye", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]]
+  ],
+  "Simbi": [
+    ["Gisakura", ["Gatovu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Kabusanza", ["Gasharu", "Gisunzu", "Kanyinya", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Mugobore", ["Gasharu", "Gisunzu", "Kabeza", "Karambi", "Karama", "Kiyovu", "Rweru"]],
+    ["Cyendajuru", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rwesero", "Rweru"]],
+    ["Nyangazi", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]]
+  ],
+  "Rwaniro": [
+    ["Kibiraro", ["Gahongo", "Gasharu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Mwendo", ["Gasharu", "Gisunzu", "Kanyinya", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Gatwaro", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kivumu", "Kiyovu", "Rweru"]],
+    ["Kamwambi", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rwaniro", "Rweru"]],
+    ["Nyamabuye", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Shyunga", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Rweru"]],
+    ["Nyaruhombo", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]]
+  ],
+  "Kinazi": [
+    ["Byinza", ["Gahogo", "Gisanga", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Sazange", ["Gasharu", "Gisunzu", "Kibingo", "Kiyovu", "Rugarama", "Ruhuha", "Rweru"]],
+    ["Kabona", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Mbeho", "Rweru"]],
+    ["Gitovu", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]],
+    ["Gahana", ["Gasharu", "Gisunzu", "Kabeza", "Karama", "Kiyovu", "Rugarama", "Ruhuha"]]
+  ]
+}

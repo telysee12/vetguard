@@ -13,6 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { MedicineModule } from './medicine/medicine.module';
 import { FieldOfPracticeModule } from './field-of-practice/field-of-practice.module';
 import { GlobalAuthGuard } from './auth/global-auth.guard';
+import { LocationsModule } from './locations/locations.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { GlobalAuthGuard } from './auth/global-auth.guard';
     AdminModule,
     MedicineModule,
     FieldOfPracticeModule,
+    LocationsModule,
   ],
   providers: [
     {
