@@ -1258,18 +1258,29 @@ const DistrictDashboard = () => {
   }, [selectedTab]);
 
   const handleAddNew = async () => {
-    if (!fieldNameInput.trim()) {
+    const rawName = fieldNameInput.trim();
+    if (!rawName) {
       toast({ title: 'Validation', description: 'Name is required', variant: 'destructive' });
       return;
     }
+    // Prevent duplicates (case-insensitive)
+    const exists = fields.some(f => String(f.name || '').toLowerCase() === rawName.toLowerCase());
+    if (exists) {
+      toast({ title: 'Already exists', description: 'This field of practice already exists.', variant: 'destructive' });
+      return;
+    }
     try {
-      await apiPost('/api/v1/field-of-practice', { name: fieldNameInput });
+      // Normalize name to Title Case
+      const name = rawName.replace(/\s+/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+      await apiPost('/api/v1/field-of-practice', { name });
       setShowAddModal(false);
       setFieldNameInput('');
       toast({ title: 'Success', description: 'Field added' });
       loadFields();
     } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+      // Provide clearer error when server rejects duplicates or bad input
+      const msg = typeof e?.message === 'string' ? e.message : 'Failed to add field';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
     }
   };
   const handleEditField = async () => {
